@@ -1,0 +1,2 @@
+This folder holds xml files supported by the IntelliJ IDE, which allow it to suppress certain warnings by applying
+warning-suppression annotations to certain methods. They have no effect in other IDEs. Please don't delete these.

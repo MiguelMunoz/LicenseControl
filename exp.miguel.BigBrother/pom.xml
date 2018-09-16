@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<parent>
+		<artifactId>license</artifactId>
+		<groupId>exp.miguel.license.control</groupId>
+		<version>0.0.1-SNAPSHOT</version>
+	</parent>
+	<modelVersion>4.0.0</modelVersion>
+
+	<artifactId>exp.miguel.BigBrother</artifactId>
+
+	<name>BigBrother</name>
+	<packaging>jar</packaging>
+
+	<build>
+		<plugins>
+			<plugin>
+				<!-- Maven Assembly Plugin -->
+				<!--This packs all the classes into a single jar-->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.4.1</version>
+				<configuration>
+					<!-- get all project dependencies -->
+					<descriptorRefs>
+						<descriptorRef>jar-with-dependencies</descriptorRef>
+					</descriptorRefs>
+					<!-- MainClass in mainfest make a executable jar -->
+					<archive>
+						<manifest>
+							<mainClass>exp.miguel.licensecontrol.license.BigBrother</mainClass>
+						</manifest>
+					</archive>
+					<!--This "appendAssemblyId" tag removes the "with-dependencies" from the name.-->
+					<!--This overwrites the other jar file, which can cause further problems.-->
+					<!--<appendAssemblyId>false</appendAssemblyId>-->
+
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id>
+						<!-- bind to the packaging phase -->
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<!--This is the Maven dependency plugin.-->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-dependencies</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+							<goal>properties</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>
+								${project.build.directory}/libs
+							</outputDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+		</plugins>
+	</build>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-activemq</artifactId>
+		</dependency>
+
+		<dependency>
+			<!--Including this forces an embedded broker, provided you don't include a url property. -->
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-broker</artifactId>
+		</dependency>
+
+		<!--<dependency>-->
+			<!--&lt;!&ndash;Including this forces an embedded broker, provided you don't include a url property. &ndash;&gt;-->
+			<!--&lt;!&ndash; https://mvnrepository.com/artifact/org.apache.activemq/apache-artemis &ndash;&gt;-->
+			<!--&lt;!&ndash;Using Artemis instead of ApacheMQ lead to an exception on launching. It complained about the LoggingFactory.&ndash;&gt;-->
+			<!--<groupId>org.apache.activemq</groupId>-->
+			<!--<artifactId>apache-artemis</artifactId>-->
+			<!--<version>2.6.2</version>-->
+			<!--<type>pom</type>-->
+		<!--</dependency>-->
+
+		<dependency>
+			<!-- https://mvnrepository.com/artifact/javax.servlet/servlet-api -->
+			<groupId>javax.servlet</groupId>
+			<artifactId>servlet-api</artifactId>
+			<version>2.5</version>
+			<scope>provided</scope>
+		</dependency>
+
+	</dependencies>
+
+</project>

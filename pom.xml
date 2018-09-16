@@ -3,13 +3,28 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>exp.miguel.license-control</groupId>
+	<groupId>exp.miguel.license.control</groupId>
 	<artifactId>license</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<packaging>jar</packaging>
+	<modules>
+		<module>Client</module>
+		<module>exp.miguel.BigBrother</module>
+	</modules>
+	<!--<modules>-->
+		<!--<module>license.client</module>-->
+		<!--<module>BigBrother</module>-->
+	<!--</modules>-->
+	<packaging>pom</packaging>
 
 	<name>License Control</name>
 	<description>License Control Coding Challenge</description>
+	<developers>
+		<developer>
+			<id>SwingGuy1024</id>
+			<name>Miguel Muñoz</name>
+			<email>SwingGuy1024@yahoo.com</email>
+		</developer>
+	</developers>
 
 	<parent>
 		<groupId>org.springframework.boot</groupId>
@@ -22,13 +37,41 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>1.8</java.version>
+		<maven.compiler.source>${java.version}</maven.compiler.source>
+		<maven.compiler.target>${java.version}</maven.compiler.target>
 	</properties>
 
 	<dependencies>
+		<!--<dependency>-->
+			<!--<groupId>org.springframework.boot</groupId>-->
+			<!--<artifactId>spring-boot-starter-activemq</artifactId>-->
+		<!--</dependency>-->
+
+		<!--<dependency>-->
+		<!--<groupId>org.springframework.boot</groupId>-->
+		<!--<artifactId>spring-boot-starter</artifactId>-->
+		<!--</dependency>-->
+
+		<!--Use FFMQ instead of ActiveMQ-->
+		<!--<dependency>-->
+		<!--<groupId>net.timewalker.ffmq</groupId>-->
+		<!--<artifactId>ffmq4-core</artifactId>-->
+		<!--<version>4.0.0</version>-->
+		<!--</dependency>-->
+
+		<!-- https://mvnrepository.com/artifact/javax.jms/javax.jms-api -->
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-activemq</artifactId>
+			<groupId>javax.jms</groupId>
+			<artifactId>javax.jms-api</artifactId>
+			<version>2.0.1</version>
 		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/javax.jms/jms-api -->
+		<!--<dependency>-->
+		<!--<groupId>javax.jms</groupId>-->
+		<!--<artifactId>jms-api</artifactId>-->
+		<!--<version>1.1-rev-1</version>-->
+		<!--</dependency>-->
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -38,6 +81,51 @@
 	</dependencies>
 
 	<build>
+		<pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
+			<plugins>
+				<plugin>
+					<artifactId>maven-clean-plugin</artifactId>
+					<version>3.0.0</version>
+				</plugin>
+				<!-- see http://maven.apache.org/ref/current/maven-core/default-bindings.html#Plugin_bindings_for_jar_packaging -->
+				<plugin>
+					<artifactId>maven-resources-plugin</artifactId>
+					<version>3.0.2</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>3.8.0</version>
+					<configuration>
+						<source>${java.version}</source>
+						<target>${java.version}</target>
+					</configuration>
+				</plugin>
+				<plugin>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>2.20.1</version>
+				</plugin>
+				<plugin>
+					<artifactId>maven-jar-plugin</artifactId>
+					<version>3.0.2</version>
+				</plugin>
+				<plugin>
+					<artifactId>maven-install-plugin</artifactId>
+					<version>2.5.2</version>
+				</plugin>
+				<plugin>
+					<artifactId>maven-deploy-plugin</artifactId>
+					<version>2.8.2</version>
+				</plugin>
+				<plugin>
+					<artifactId>maven-war-plugin</artifactId>
+					<version>2.4</version>
+					<configuration>
+						<failOnMissingWebXml>false</failOnMissingWebXml>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
@@ -45,6 +133,5 @@
 			</plugin>
 		</plugins>
 	</build>
-
 
 </project>

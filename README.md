@@ -16,13 +16,15 @@ The purpose is to limit the number of thread, operating on different machines, t
 Two jars are provided. BigBrother.jar is the central authority. It should be launched first.
 The second is LicenseClient.jar. Launch this to start thread requesting license authority. Syntax is as follows:
 
-    java -jar LicenseClient.jar [-n threadCount] [-t timeToSolve] [-c crashCount]
+    java -jar LicenseClient.jar [-n threadCount] [-t timeToSolve] [-c crashCount] [-u licenseURL]
 
 Options may be entered in any order and all have default values. Options are as follows:
 
   * `threadCount` is the number of licenses to request, each on its on thread. Default to 1.
   * `timeToSolve` is the number of seconds to take solving the simulated problem. Defaults to 5.
-  * `crashCount` is the number of threads to crash before solving. Defaults to 0.
+  * `crashCount` is the number of additional threads to crash before solving. Defaults to 0. The total number of threads launched will be equal to `threadCount + crashCount`.
+  * `licenseURL` is the optional URL of the license authority. This parameter is not necessary if the license authority is running on localhost.
+  * All of the default values may also be overridden by adding a `licenseClient.properties` file. 
   
   You may launch as many tests as you want simultaneously.
   
@@ -31,7 +33,27 @@ Options may be entered in any order and all have default values. Options are as 
 Both the client and the server may be configured. Configuration is done through properties files, to be placed in the directory given by the "user.dir" System property, which is usually the directory where the application was launched.
 
 ### Client Configuration
-LicenseClient looks for an optional properties file called licenseClient.properties, which contains the URL to connect to the JMS server managing the licenses. This defaults to localhost. It also lets you change the default values for threadCount, timeToSolve, and crashCount. Command line arguments take precedence over values in the properties file.  
+LicenseClient looks for an optional properties file called licenseClient.properties, which contains the URL to connect to the JMS server managing the licenses. This defaults to localhost. It also lets you change the default values for threadCount, timeToSolve, and crashCount. Command line arguments take precedence over values in the properties file. 
+#### Default URL
+By default, the URL of the license broker is `http://localhost:61616/` but you may override this on the client by setting the `licenseURL` property.
 
 ### Server Configuration
 The server looks for an optional properties file called BigBrother.properties. This contains the licenseLimit property, which specifies the number of licenses to run at any given time. If I have time, I'll place the property in a database, so it can be changed on the fly. It defaults to 5 licenses.
+
+## How it Works
+
+### JMS Queues and Topics
+
+#### Authority IDTopic
+Assigns an ID to any license client that requests one. Returns immediately. (Might not be necessary)
+
+#### Authority LaunchTopic
+Authorizes a license client with the specified ID to start its licensed task
+
+#### Authority KeepAliveTopic
+Allows the license authority to keep track of which waiting clients are still alive and which
+have died.
+
+#### Client IDRequestTopic
+Temporary Topic allows the client to receive an id from the authority. (Might not be necessary.)
+

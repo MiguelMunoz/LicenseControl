@@ -9,6 +9,7 @@
 	<modules>
 		<module>Client</module>
 		<module>exp.miguel.BigBrother</module>
+		<module>licenseModel</module>
 	</modules>
 	<!--<modules>-->
 		<!--<module>license.client</module>-->
@@ -26,12 +27,12 @@
 		</developer>
 	</developers>
 
-	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.0.5.RELEASE</version>
-		<relativePath/> <!-- lookup parent from repository -->
-	</parent>
+	<!--<parent>-->
+		<!--<groupId>org.springframework.boot</groupId>-->
+		<!--<artifactId>spring-boot-starter-parent</artifactId>-->
+		<!--<version>2.0.5.RELEASE</version>-->
+		<!--<relativePath/> &lt;!&ndash; lookup parent from repository &ndash;&gt;-->
+	<!--</parent>-->
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -39,6 +40,9 @@
 		<java.version>1.8</java.version>
 		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
+		<spring.boot.version>2.0.5.RELEASE</spring.boot.version>
+		<springfox-version>2.7.0</springfox-version>
+		<!--<build.plugins.plugin.version></build.plugins.plugin.version>-->
 	</properties>
 
 	<dependencies>
@@ -50,6 +54,7 @@
 		<!--<dependency>-->
 		<!--<groupId>org.springframework.boot</groupId>-->
 		<!--<artifactId>spring-boot-starter</artifactId>-->
+			<!--<version></version>-->
 		<!--</dependency>-->
 
 		<!--Use FFMQ instead of ActiveMQ-->
@@ -60,11 +65,11 @@
 		<!--</dependency>-->
 
 		<!-- https://mvnrepository.com/artifact/javax.jms/javax.jms-api -->
-		<dependency>
-			<groupId>javax.jms</groupId>
-			<artifactId>javax.jms-api</artifactId>
-			<version>2.0.1</version>
-		</dependency>
+		<!--<dependency>-->
+			<!--<groupId>javax.jms</groupId>-->
+			<!--<artifactId>javax.jms-api</artifactId>-->
+			<!--<version>2.0.1</version>-->
+		<!--</dependency>-->
 
 		<!-- https://mvnrepository.com/artifact/javax.jms/jms-api -->
 		<!--<dependency>-->
@@ -73,11 +78,11 @@
 		<!--<version>1.1-rev-1</version>-->
 		<!--</dependency>-->
 
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-		</dependency>
+		<!--<dependency>-->
+			<!--<groupId>org.springframework.boot</groupId>-->
+			<!--<artifactId>spring-boot-starter-test</artifactId>-->
+			<!--<scope>test</scope>-->
+		<!--</dependency>-->
 	</dependencies>
 
 	<build>
@@ -130,6 +135,7 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>2.0.5.RELEASE</version>
 			</plugin>
 		</plugins>
 	</build>

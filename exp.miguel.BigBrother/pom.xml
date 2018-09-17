@@ -14,8 +14,27 @@
 	<name>BigBrother</name>
 	<packaging>jar</packaging>
 
+	<properties>
+		<java.version>1.8</java.version>
+		<maven.compiler.source>${java.version}</maven.compiler.source>
+		<maven.compiler.target>${java.version}</maven.compiler.target>
+		<springfox-version>2.7.0</springfox-version>
+	</properties>
+
 	<build>
 		<plugins>
+			<plugin>
+				<!--Taken from swagger-generated pom file-->
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<!-- Maven Assembly Plugin -->
 				<!--This packs all the classes into a single jar-->
@@ -75,16 +94,17 @@
 	</build>
 
 	<dependencies>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-activemq</artifactId>
-		</dependency>
+		<!--From the previous attempt to do this using JMS. Had to rip it out.-->
+		<!--<dependency>-->
+			<!--<groupId>org.springframework.boot</groupId>-->
+			<!--<artifactId>spring-boot-starter-activemq</artifactId>-->
+		<!--</dependency>-->
 
-		<dependency>
-			<!--Including this forces an embedded broker, provided you don't include a url property. -->
-			<groupId>org.apache.activemq</groupId>
-			<artifactId>activemq-broker</artifactId>
-		</dependency>
+		<!--<dependency>-->
+			<!--&lt;!&ndash;Including this forces an embedded broker, provided you don't include a url property. &ndash;&gt;-->
+			<!--<groupId>org.apache.activemq</groupId>-->
+			<!--<artifactId>activemq-broker</artifactId>-->
+		<!--</dependency>-->
 
 		<!--<dependency>-->
 			<!--&lt;!&ndash;Including this forces an embedded broker, provided you don't include a url property. &ndash;&gt;-->
@@ -96,14 +116,87 @@
 			<!--<type>pom</type>-->
 		<!--</dependency>-->
 
+		<!--<dependency>-->
+			<!--<groupId>org.springframework.boot</groupId>-->
+			<!--<artifactId>spring-boot-starter-parent</artifactId>-->
+			<!--<version>1.5.9.RELEASE</version>-->
+		<!--</dependency>-->
+
+		<!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-autoconfigure -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-autoconfigure</artifactId>
+			<version>2.0.5.RELEASE</version>
+		</dependency>
+
+		<dependency>
+			<!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-parent -->
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-parent</artifactId>
+			<version>2.0.4.RELEASE</version>
+			<type>pom</type>
+		</dependency>
+
+		<dependency>
+			<!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-web -->
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+			<version>2.0.5.RELEASE</version>
+		</dependency>
+
+		<dependency>
+			<!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-tomcat -->
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-tomcat</artifactId>
+			<version>2.0.5.RELEASE</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.google.code.findbugs</groupId>
+			<artifactId>jsr305</artifactId>
+			<version>1.3.9</version>
+		</dependency>
+		
+		<!--<dependency>-->
+			<!--<groupId>exp.miguel.license.control</groupId>-->
+			<!--<artifactId>license.model</artifactId>-->
+		<!--</dependency>-->
+
 		<dependency>
 			<!-- https://mvnrepository.com/artifact/javax.servlet/servlet-api -->
 			<groupId>javax.servlet</groupId>
 			<artifactId>servlet-api</artifactId>
 			<version>2.5</version>
 			<scope>provided</scope>
+			
 		</dependency>
 
+		<!--Dependencies from swagger-generated pom file:-->
+
+		<!--SpringFox dependencies -->
+		<dependency>
+			<groupId>io.springfox</groupId>
+			<artifactId>springfox-swagger2</artifactId>
+			<version>${springfox-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.springfox</groupId>
+			<artifactId>springfox-swagger-ui</artifactId>
+			<version>${springfox-version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.github.joschi.jackson</groupId>
+			<artifactId>jackson-datatype-threetenbp</artifactId>
+			<version>2.6.4</version>
+		</dependency>
+		<!--<dependency>-->
+			<!--&lt;!&ndash; Bean Validation API support &ndash;&gt;-->
+			<!--<groupId>javax.validation</groupId>-->
+			<!--<artifactId>validation-api</artifactId>-->
+			<!--<version>1.1.0.Final</version>-->
+			<!--<scope>provided</scope>-->
+		<!--</dependency>-->
 	</dependencies>
 
 </project>

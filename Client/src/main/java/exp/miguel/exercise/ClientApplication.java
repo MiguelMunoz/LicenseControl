@@ -1,23 +1,20 @@
-package exp.miguel.license.client;
+package exp.miguel.exercise;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Properties;
-import javax.jms.Connection;
-import javax.jms.JMSException;
-import exp.miguel.license.client.tasks.DummyFailedTask;
-import exp.miguel.license.client.tasks.DummySuccessfulTask;
-import exp.miguel.license.client.tasks.LicenseTask;
-import org.apache.activemq.ActiveMQConnectionFactory;
+import java.util.concurrent.ExecutionException;
+import exp.miguel.license.client.LicenseException;
+import exp.miguel.license.client.MessageFacade;
+import exp.miguel.license.client.LicenseTask;
+import exp.miguel.license.client.OptimizerSolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +23,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.jms.annotation.EnableJms;
+//import org.springframework.jms.annotation.EnableJms;
 
 /**
  * <p>Created by IntelliJ IDEA.
@@ -37,7 +34,7 @@ import org.springframework.jms.annotation.EnableJms;
  */
 @SpringBootApplication
 @ComponentScan(basePackages = {"exp.miguel.license.client", "exp.miguel.license"})
-@EnableJms
+//@EnableJms
 public class ClientApplication implements CommandLineRunner {
 	private static final Logger log = LoggerFactory.getLogger(ClientApplication.class);
 
@@ -49,7 +46,6 @@ public class ClientApplication implements CommandLineRunner {
 	private static int timeToSolve = 5;
 	private static int crashCount = 0;
 	private static String licenseUrl = "tcp://localhost:61616/"; // NON-NLS
-	private static final long ONE_WEEK = 1000L * 3600L * 24L * 7L;
 	private MessageFacade messageFacade;
 	private static ConfigurableApplicationContext context;
 
@@ -110,6 +106,25 @@ public class ClientApplication implements CommandLineRunner {
 
 	@SuppressWarnings({"EqualsReplaceableByObjectsCall", "HardCodedStringLiteral"})
 	private static void processArgs(String[] args) {
+		StringBuilder argString = new StringBuilder();
+		for (String s: args) {
+			//noinspection MagicCharacter
+			argString.append(s).append(' ');
+		}
+		log.info("Command line arguments: {}", argString);
+		System.err.printf("Command line arguments: %s%n", argString); // NON-NLS
+		// First check if we're lowering the limit.
+		
+		if ((args.length == 2) && "-limit".equals(args[0])) {
+			int newLimit = Integer.valueOf(args[1]);
+			try {
+				OptimizerSolver.setNewLimit(newLimit);
+			} catch (LicenseException e) {
+				//noinspection UseOfSystemOutOrSystemErr
+				System.err.printf("Error setting a new limit: %s%n", e.getLocalizedMessage()); // NON-NLS
+				e.printStackTrace();
+			}
+		}
 		List<String> argList = Arrays.asList(args);
 		Iterator<String> itr = argList.iterator();
 		try {
@@ -134,74 +149,43 @@ public class ClientApplication implements CommandLineRunner {
 	}
 
 	private void launchThreads(int count, int timeSeconds, int crashes) {
-		// tried 1099, 2049, 4380
-		
-		// found ports: Connected at port 1099
-		//Connected at port 2049
-		//Connected at port 4380
-		//Connected at port 6942
-		//Connected at port 10638
-		//Connected at port 18170
-		//Connected at port 34000
-		//Connected at port 50188
-		//Connected at port 50198
-		//Connected at port 53575
-		//Connected at port 60556
-		//Connected at port 60557
-		//Connected at port 60572
-		//Connected at port 60573
-		//Connected at port 63342
-		//Connected at port 63830
-		//Connected at port 63831
-		//Connected at port 63838
-		//Connected at port 63839.
-
-		long id = System.currentTimeMillis();
-//		{
-//			boolean connected = false;
-//			int foundPort = 0;
-//			for (int port = 1024; port < 65536; ++port) {
-//				try {
-//					String urlText = String.format("tcp://localhost:%d", port);
-////					URL url = new URL("tcp:", "localhost", port, "");
-////					URL url = new URL(urlText);
-////					java.net.URLConnection connection = url.openConnection();
-//					ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory("admin", "admin", urlText);
-//					factory.createConnection();
-//					connected = true;
-//					foundPort = port;
-//					System.out.printf("Connected at port %d%n", port);
-////					break;
-////				} catch (MalformedURLException e) {
-////					throw new IllegalStateException(String.format("Port: %d", port), e);
-////				} catch (IOException e) { }
-//				} catch (JMSException e) {
-////					e.printStackTrace();
-//				}
-//			}
-//			log.info("Connected: {} at port {}", connected, foundPort);
-//
-//		}
 
 		List<LicenseTask> futureList = new LinkedList<>();
 		while ((count > 0) || (crashes > 0)) {
 			if (count > 0) {
-				futureList.add(new DummySuccessfulTask(id, timeSeconds));
-				id += ONE_WEEK;
+				futureList.add(new DummySuccessfulTask(timeSeconds));
 				count--;
 			}
 			if (crashes > 0) {
-				futureList.add(new DummyFailedTask(id, timeSeconds));
-				id += ONE_WEEK;
+				futureList.add(new DummyFailedTask(timeSeconds));
 				crashes--;
 			}
 		}
 
+		int threadNumber = 0;
 		for (LicenseTask task : futureList) {
-			String reply = messageFacade.requestLicense(task.getId());
-			log.info("requestLicense() reply: {}", reply);
-//			sendTopicMessage("");
+			// 2 Notes
+			// 1. The spec didn't specify what to return if the solver throws an exception, except to preserve the integrity 
+			//    of the license terms. So my solve() method will throw an Exception if something goes wrong. This may be
+			//    easily changed.
+			// 2. The method takes a parameter. This isn't necessary for an actual solver, but I needed it to test it with 
+			//    two different possible tasks, one of which throws an exception and the other of which finishes normally.
+			//    This also has the advantage that it's more easily adaptable to other licensed tasks.
+			new Thread(() -> doTask(task), String.format("Solver Thread %d", threadNumber++)).start(); //NON-NLS
+			try {
+				Thread.sleep(950);
+			} catch (InterruptedException ignored) {}
 		}
 	}
 
+	private void doTask(LicenseTask task) {
+		try {
+			OptimizerSolver solver = new OptimizerSolver(task);
+			String solution = solver.solve();
+			log.info(solution);
+//			System.err.printf("Solution: %s%n", solution); // NON-NLS
+		} catch (LicenseException e) {
+			e.printStackTrace();
+		}
+	}
 }

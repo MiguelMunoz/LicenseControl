@@ -13,10 +13,17 @@ The purpose is to limit the number of thread, operating on different machines, t
 
 ## Operation:
 
-Two jars are provided. BigBrother.jar is the central authority. It should be launched first.
-The second is LicenseClient.jar. Launch this to start thread requesting license authority. Syntax is as follows:
+Two jars are provided. BigBrother.jar is the central authority. It should be launched first:
+
+    java -jar BigBrother.jar
+
+Alternatively, you may change the BigBrother packaging in maven to `war` and launch it in a server. By default, the license allows 5 instances to run at once, but this may be changed dynamically using the LicenceClient tool.
+
+The second is LicenseClient.jar. This application creates test thread that request a license. Each instance may request multiple licenses, some of which are designed to throw an exception instead of returning normally. 
+ Launch this to start thread requesting license authority. Syntax is as follows:
 
     java -jar LicenseClient.jar [-n threadCount] [-t timeToSolve] [-c crashCount] [-u licenseURL]
+    java -jar LicenseClient.jar -limit new-License-Limit
 
 Options may be entered in any order and all have default values. Options are as follows:
 
@@ -27,6 +34,8 @@ Options may be entered in any order and all have default values. Options are as 
   * All of the default values may also be overridden by adding a `licenseClient.properties` file. 
   
   You may launch as many tests as you want simultaneously.
+  
+  If you use it to change the limit, and you are lowering the limit, you should make this change before the legal limit is actually lowered. So if 3 of your 5 licenses expire on midnight of August 1, you should lower the limit on July 31. This is because all licenses that are currently in use will be allowed to continue running until they complete, even if the number running is now beyond the newly set limit. 
   
 ## Configuration:
 

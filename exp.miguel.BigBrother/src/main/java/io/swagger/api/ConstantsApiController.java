@@ -34,7 +34,7 @@ public class ConstantsApiController implements ConstantsApi {
 			Constants constants = new Constants();
 			constants.setKeepAliveTimeSeconds(keepAliveMillis);
 			log.debug("Keep-Alive from server: {}", keepAliveMillis);
-			log.debug("Constants from server: {}", constants);
+//			log.debug("Constants from server: {}", constants);
 			return new ResponseEntity<>(constants, HttpStatus.OK);
 		}
 		log.debug("Bad Header: {}", accept);

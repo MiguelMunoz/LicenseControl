@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import io.swagger.model.RequestDetail;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,10 +22,13 @@ public class TestIdLog {
 	private static final long TO_MILLIS = 1000L;
 	private static final String OKAY = "Okay";
 	private static final int MAX = 20;
+	
+	@Test
+	public void testNothing() { }
 
-	public static void main(String[] args) {
-		new TestIdLog().testLog();
-	}
+//	public static void main(String[] args) {
+////		new TestIdLog().testLog();
+//	}
 //	@Test
 	private void testLog() {
 		Deque<String> waiting = new LinkedList<>();

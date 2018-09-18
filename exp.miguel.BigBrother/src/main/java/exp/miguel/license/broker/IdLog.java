@@ -110,13 +110,14 @@ public enum IdLog {
 	private RequestDetail doLaunch(String id) {
 		keepRunnerAlive(id); // This puts the id onto the aliveRunners set if it's not there. 
 		RequestDetail requestDetail = createRequestDetail(id, LicenseConstants.OKAY);
-		log.debug("                    {} waiting threads: {}", aliveWaiters.size(), aliveWaiters.keySet());
-		log.debug("Launching id {} for {} running threads: {} ********", id, aliveRunners.size(), aliveRunners.keySet());
-//		keepRunnerAlive(id);
+		log.debug("                    {} waiting threads: {}", aliveWaiters.size(), debugLimitedToString(aliveWaiters.keySet()));
+		log.debug("* Launching id {} for {} running threads: {} ********", id, aliveRunners.size(), aliveRunners.keySet());
+		log.debug("task {} no longer waiting", id);
 		aliveWaiters.remove(id);
+		log.debug("Remaining Waiters: {}", aliveWaiters.keySet());
 		return requestDetail;
 	}
-
+	
 	@GuardedBy("LOCK")
 	private void keepRunnerAlive(final String id) {
 		aliveRunners.put(id, System.currentTimeMillis());
@@ -133,8 +134,14 @@ public enum IdLog {
 	@GuardedBy("LOCK")
 	private void keepWaiterAlive(String id) {
 		aliveWaiters.put(id, System.currentTimeMillis());
-		log.debug("Request id {} alive at {} for {} waiters: {}", id, aliveWaiters.get(id)-startTime, aliveWaiters.size(), aliveWaiters.keySet());
-		log.debug("                              {} runners: {}", aliveRunners.size(), aliveRunners.keySet());
+		log.debug("Request id {} alive at {} for {} runners: {} and {} waiters: {}", 
+				id, 
+				aliveWaiters.get(id)-startTime,
+				aliveRunners.size(),
+				aliveRunners.keySet(),
+				aliveWaiters.size(), 
+				debugLimitedToString(aliveWaiters.keySet())
+		);
 	}
 
 	/* ****************
@@ -142,8 +149,12 @@ public enum IdLog {
 	 * ****************/
 	
 	public void keepAlive(String id) {
+		// Sometimes this message gets processed just after the completed message let to its removal. In this case, 
+		// we don't want to put it back, so we look to ensure it's still there.
 		synchronized (LOCK) {
-			keepWaiterAlive(id);
+			if (aliveRunners.keySet().contains(id)) {
+				keepRunnerAlive(id);
+			}
 		}
 	}
 	
@@ -154,16 +165,16 @@ public enum IdLog {
 	public void complete(String id) {
 		synchronized (LOCK) {
 			aliveRunners.remove(id);
-			log.debug("....              {} waiting threads = {} $$$$$$$$", aliveWaiters.size(), aliveWaiters.keySet());
-			log.debug("Completing id {}: {} running threads = {} $$$$$$$$", id, aliveRunners.size(), aliveRunners.keySet());
 		}
+		log.debug("....              {} waiting threads = {}... $$$$$$$$", aliveWaiters.size(), debugLimitedToString(aliveWaiters.keySet()));
+		log.debug("* Completing id {}: {} running threads = {}    $$$$$$$$", id, aliveRunners.size(), aliveRunners.keySet());
 	}
 	
 	private void launchGraveDigger() {
 		Runnable runner = () -> {
 			//noinspection OverlyBroadCatchBlock
 			try {
-				final long keepAliveLimit = 2 * LicenseLimit.getKeepAliveMilliseconds();
+				final long keepAliveLimit = 3 * LicenseLimit.getKeepAliveMilliseconds();
 				final long sleepTime = keepAliveLimit/10;
 				//noinspection InfiniteLoopStatement
 				while (true) {
@@ -185,23 +196,46 @@ public enum IdLog {
 		graveDigger.start();
 	}
 
-	private void removeDeadEntries(final long deadLimit, final Map<String, Long> aliveEntries) {
+	private void removeDeadEntries(final long deadLimit, final Map<String, Long> entries) {
 		synchronized (LOCK) {
-			Iterator<Map.Entry<String, Long>> iterator = aliveEntries.entrySet().iterator();
+			Iterator<Map.Entry<String, Long>> iterator = entries.entrySet().iterator();
 			while (iterator.hasNext()) {
 				final Map.Entry<String, Long> stringLongEntry = iterator.next();
 				long previousTime = stringLongEntry.getValue();
 				if (previousTime < deadLimit) {
+					log.debug("Found dead id {} in {}", stringLongEntry.getKey(), entries.keySet());
 					iterator.remove();
+					log.debug("Removed as {}", entries.keySet());
 					//noinspection ObjectEquality
 					log.debug("Removing Dead Task id {} from {} with remaining: {}", 
 							stringLongEntry.getKey(), 
-							((aliveEntries == aliveRunners) ? "runners" : "waiters"),// NON-NLS
-							aliveEntries.keySet()
+							((entries == aliveRunners) ? "runners" : "waiters"),// NON-NLS
+							debugLimitedToString(entries.keySet())
 					);
 				}
 			}
 		}
+	}
+	
+	private static <T> String debugLimitedToString(Iterable<T> iterable) {
+		int limit = LicenseLimit.getLimit();
+		Iterator<T> iterator = iterable.iterator();
+		StringBuilder builder = new StringBuilder("[");
+		if ((limit > 0) && iterator.hasNext()) {
+			builder.append(iterator.next());
+			limit--;
+		}
+		while ((limit > 0) && iterator.hasNext()) {
+			builder.append(", ").append(iterator.next());
+			limit--;
+		}
+		if (iterator.hasNext()) {
+			builder.append("... ]");
+		} else {
+			//noinspection MagicCharacter
+			builder.append(']');
+		}
+		return builder.toString();
 	}
 	
 	@SuppressWarnings("FieldAccessNotGuarded")

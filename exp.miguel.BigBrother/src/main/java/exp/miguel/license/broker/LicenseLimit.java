@@ -23,7 +23,7 @@ public final class LicenseLimit {
 	// integration, just to create a single table, with just two columns, holding a single record, especially since
 	// I had already written the PropertyFile class on another project.
 	private static PropertyFile propertiesFile 
-			= new PropertyFile(String.format("%s/BigBrother", System.getProperty("user.home"))); // NON-NLS
+			= new PropertyFile(String.format("%s/BigBrother", System.getProperty("user.dir"))); // NON-NLS
 
 	private static long keepAliveMillis = 6000L;
 

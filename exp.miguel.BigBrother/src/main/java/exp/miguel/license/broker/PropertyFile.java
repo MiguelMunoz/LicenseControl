@@ -18,6 +18,8 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.Map;
 import java.util.Properties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class to safely wrap the troublesome Properties class, with improved support for saving properties to files.
@@ -28,6 +30,7 @@ import java.util.Properties;
  */
 @SuppressWarnings({"WeakerAccess", "unused", "UnusedReturnValue"})
 public final class PropertyFile {
+	private static final Logger log = LoggerFactory.getLogger(PropertyFile.class);
 	private final String filePath;
 	private final Properties properties = new Properties();
 
@@ -39,6 +42,7 @@ public final class PropertyFile {
 	public PropertyFile(String path) {
 		filePath = path;
 		doLoad();
+		log.debug("Property File: {}", filePath);
 	}
 
 	public final void load() {

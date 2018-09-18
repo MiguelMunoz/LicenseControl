@@ -41,11 +41,13 @@ public class ClientApplication implements CommandLineRunner {
 	private static final String THREAD_COUNT = "threadCount";
 	private static final String TIME_TO_SOLVE = "timeToSolve";
 	private static final String CRASH_COUNT = "crashCount";
-	private static final String LICENSE_URL = "licenseURL";
+	private static final String REVISED_LIMIT = "revisedLimit";
+//	private static final String LICENSE_URL = "licenseURL";
 	private static int threadCount = 1;
 	private static int timeToSolve = 5;
 	private static int crashCount = 0;
-	private static String licenseUrl = "tcp://localhost:61616/"; // NON-NLS
+	private static int revisedLimit = 0;
+//	private static String licenseUrl = "tcp://localhost:61616/"; // NON-NLS
 	private MessageFacade messageFacade;
 	private static ConfigurableApplicationContext context;
 
@@ -77,20 +79,18 @@ public class ClientApplication implements CommandLineRunner {
 		threadCount = getInt(properties, THREAD_COUNT, threadCount);
 		timeToSolve = getInt(properties, TIME_TO_SOLVE, timeToSolve);
 		crashCount = getInt(properties, CRASH_COUNT, crashCount);
-		licenseUrl = properties.getProperty(LICENSE_URL, licenseUrl);
 		log.warn("threadCount: {}", threadCount);
 		log.warn("timeToSolve: {}", timeToSolve);
 		log.warn("crashCount:  {}", crashCount);
 		log.warn("Running on Java {}", System.getProperty("java.version"));
 
-		// strip off trailing slash:
-		while (licenseUrl.endsWith("/")) {
-			licenseUrl = licenseUrl.substring(0, licenseUrl.length() - 1);
-		}
-
 		processArgs(args);
-
-		new Thread(() -> launchThreads(threadCount, timeToSolve, crashCount) ).start();
+		
+		if (revisedLimit > 0) {
+			launchLimitTask(revisedLimit);
+		} else {
+			new Thread(() -> launchThreads(threadCount, timeToSolve, crashCount) ).start();
+		}
 	}
 
 	private static int getInt(Properties properties, String key, int defaultValue) {
@@ -112,7 +112,7 @@ public class ClientApplication implements CommandLineRunner {
 			argString.append(s).append(' ');
 		}
 		log.info("Command line arguments: {}", argString);
-		System.err.printf("Command line arguments: %s%n", argString); // NON-NLS
+//		System.err.printf("Command line arguments: %s%n", argString); // NON-NLS
 		// First check if we're lowering the limit.
 		
 		if ((args.length == 2) && "-limit".equals(args[0])) {
@@ -136,14 +136,15 @@ public class ClientApplication implements CommandLineRunner {
 					timeToSolve = Integer.valueOf(itr.next());
 				} else if ("-c".equals(arg)) {
 					crashCount = Integer.valueOf(itr.next());
-				} else if ("-u".equals(arg)) {
-					licenseUrl = itr.next();
+				} else if ("-limit".equals(arg)) {
+					revisedLimit = Integer.valueOf(itr.next());
 				}
 			}
 		} catch (NumberFormatException | NoSuchElementException e) {
 			log.error(e.getLocalizedMessage(), e);
 			//noinspection UseOfSystemOutOrSystemErr
-			System.err.printf("Usage: java -jar <jar-file> [-n %s] [-t %s] [-c %s] [-u %s]%n", THREAD_COUNT, TIME_TO_SOLVE, CRASH_COUNT, LICENSE_URL);
+			System.err.printf("Command line arguments: [-n %s] [-t %s] [-c %s]", THREAD_COUNT, TIME_TO_SOLVE, CRASH_COUNT);
+			System.err.printf("                    or: [-limit %s]", REVISED_LIMIT);
 			System.exit(-1);
 		}
 	}
@@ -177,6 +178,15 @@ public class ClientApplication implements CommandLineRunner {
 			} catch (InterruptedException ignored) {}
 		}
 	}
+	
+	private void launchLimitTask(int revisedLimit) {
+		try {
+			messageFacade.setLimit(revisedLimit);
+			log.info("Limit raised to {}", revisedLimit);
+		} catch (LicenseException e) {
+			log.error("Failed to reset limit: {}", e.getLocalizedMessage(), e);
+		}
+	}
 
 	private void doTask(LicenseTask task) {
 		try {
@@ -185,7 +195,8 @@ public class ClientApplication implements CommandLineRunner {
 			log.info(solution);
 //			System.err.printf("Solution: %s%n", solution); // NON-NLS
 		} catch (LicenseException e) {
-			e.printStackTrace();
+			log.debug("Exception processing solve(): {} (Change this to log the stack trace)", e.getLocalizedMessage());
+//			e.printStackTrace();
 		}
 	}
 }
